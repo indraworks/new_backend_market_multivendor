@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+//static import for routes
+import path from "path";
 import authRoutes from "./routes/auth";
 import { errorHandler } from "./middlewares/errorHandler";
 import recommenderRoutes from "./routes/recommender";
@@ -14,7 +16,8 @@ app.use("/api/v1/recommender", recommenderRoutes);
 
 // health
 app.get("/health", (req, res) => res.json({ ok: true }));
-
+//static files
+app.use(express.static(path.join(__dirname, "../public")));
 app.use(errorHandler);
 
 export default app;
