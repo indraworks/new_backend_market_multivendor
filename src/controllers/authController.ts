@@ -4,21 +4,42 @@ import pool from "../db";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import crypto from "crypto";
 import { envelope } from "../utils/responseEnvelope"; // asumsi ada
+import { sendMail } from "../utils//mailer";
+import { passwordResetEmailTemplate } from "../utils/emailTemplates";
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || "change_me";
-const JWT_EXPIRES_IN =
-  process.env.JWT_EXPIRES_IN && !isNaN(Number(process.env.JWT_EXPIRES_IN))
-    ? /*
+const JWT_SECRET: jwt.Secret = process.env.JWT_SECRET || "change_me";
+const RESET_JWT_SECRET: jwt.Secret =
+  process.env.RESET_JWT_SECRET || "change_me";
 
-The issue is that JWT_EXPIRES_IN is being passed as string | number, but jwt.sign expects expiresIn to be either a number or a specific string value.
-To fix this, ensure JWT_EXPIRES_IN is explicitly typed as string or number and matches the expected values.
+const parseExpires = (v?: string): jwt.SignOptions["expiresIn"] => {
+  if (!v) return "1d";
+  const n = Number(v);
+  //return isNaN(n) ? v : n;
+  if (!Number.isNaN(n)) return n; // seconds
+  // allow ms/s/m/h/d units
+  if (!/^(\d+)(ms|s|m|h|d)$/.test(v)) {
+    throw new Error("Invalid JWT_EXPIRES_IN. Use seconds or e.g. 15m, 1h, 7d.");
+  }
+  return v as unknown as jwt.SignOptions["expiresIn"];
+};
 
+const JWT_EXPIRES_IN = parseExpires(process.env.JWT_EXPIRES_IN); // e.g. "1d" or 3600
+const RESET_JWT_EXPIRES_IN = parseExpires(process.env.RESET_JWT_EXPIRES_IN); // e.g. "1h" or 3600
+// const JWT_EXPIRES_IN =
+//   process.env.JWT_EXPIRES_IN && !isNaN(Number(process.env.JWT_EXPIRES_IN))
+//     ? /*
 
-*/
-      parseInt(process.env.JWT_EXPIRES_IN, 10)
-    : "7d";
+// The issue is that JWT_EXPIRES_IN is being passed as string | number, but jwt.sign expects expiresIn to be either a number or a specific string value.
+// To fix this, ensure JWT_EXPIRES_IN is explicitly typed as string or number and matches the expected values.
+
+// */
+//       parseInt(process.env.JWT_EXPIRES_IN, 10)
+//     : "7d";
+
+//ganti yang baru
 
 export async function register(req: Request, res: Response) {
   const { email, password, account_type = "user" } = req.body;
@@ -45,6 +66,10 @@ export async function register(req: Request, res: Response) {
 
     // optional: insert into user_profile/vendor_profile based on account_type
     // ...
+
+    // const token = jwt.sign({ id, email, role: account_type }, JWT_SECRET, {
+    //   expiresIn: JWT_EXPIRES_IN,
+    // });
 
     const token = jwt.sign({ id, email, role: account_type }, JWT_SECRET, {
       expiresIn: JWT_EXPIRES_IN,
