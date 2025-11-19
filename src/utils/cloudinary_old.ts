@@ -2,6 +2,12 @@ import { v2 as cloudinaryV2, UploadApiResponse } from "cloudinary";
 import dotenv from "dotenv";
 //import streamifier from "streamifier"; //tidak dipakai  sudah usang
 
+import axios from "axios";
+import FormData from "form-data";
+import { Readable } from "stream";
+import crypto from "crypto";
+import https from "https";
+
 dotenv.config();
 cloudinaryV2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "",
@@ -10,7 +16,18 @@ cloudinaryV2.config({
   secure: true,
 });
 
-// //MOCK TEMPPRARY FOR TESTING ONLY!
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "";
+const API_KEY = process.env.CLOUDINARY_API_KEY || "";
+const API_SECRET = process.env.CLOUDINARY_API_SECRET || "";
+const DEFAULT_FOLDER = process.env.CLOUDINARY_UPLOAD_FOLDER || "uploads";
+
+if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
+  console.warn(
+    "[CLOUDINARY] Missing credentials in env. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
+  );
+}
+
+//MOCK TEMPPRARY FOR TESTING ONLY!
 // export const uploadBufferToCloudinary = async (
 //   buffer: Buffer,
 //   options: any = {}
@@ -26,24 +43,6 @@ cloudinaryV2.config({
 //     // include other fields if needed
 //   });
 // };
-
-import axios from "axios";
-import FormData from "form-data";
-import { Readable } from "stream";
-import crypto from "crypto";
-import https from "https";
-
-const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "";
-const API_KEY = process.env.CLOUDINARY_API_KEY || "";
-const API_SECRET = process.env.CLOUDINARY_API_SECRET || "";
-const DEFAULT_FOLDER = process.env.CLOUDINARY_UPLOAD_FOLDER || "uploads";
-
-if (!CLOUD_NAME || !API_KEY || !API_SECRET) {
-  console.warn(
-    "[CLOUDINARY] Missing credentials in env. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
-  );
-}
-
 function makeSignature(paramsToSign: Record<string, any>, apiSecret: string) {
   const keys = Object.keys(paramsToSign).sort();
   const str = keys.map((k) => `${k}=${paramsToSign[k]}`).join("&");

@@ -5,6 +5,8 @@
 # Dependencies
 node_modules/
 
+#tools
+commit_backdate.sh
 # Build output
 dist/
 build/
@@ -47,6 +49,7 @@ temp/
 *.swp
 *.swo
 *.bak
+*.sh
 
 # OS generated files
 .DS_Store
@@ -88,3 +91,6 @@ prisma/migrations/dev.db
 # Custom ignore for build tools
 .eslintcache
 .cache-loader/
+scripts
+script/*
+
